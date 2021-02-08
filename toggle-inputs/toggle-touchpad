@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+device="ELAN0B00:00 04F3:306A Touchpad"
+state=$(xinput list-props "$device" | grep "Device Enabled" | grep -o "[01]$")
+
+if [ $state == '1' ];then
+  xinput --disable "$device"
+  notify-send "touchpad disabled" --expire-time=1
+else
+  xinput --enable "$device"
+  notify-send "touchpad enabled" --expire-time=1
+fi
+
+function fake_window(){
+python << END
+import gobject
+import gtk
+
+"""
+Create window, then destroy it shortly after to "feed" Unity a fake window,
+preventing the launcher to show a spinning wheel,
+waiting for a window to appear.
+Include the command to run this script at the end of the (your) script.
+"""
+def fakewindow():
+    window = gtk.Window()
+    # make our window transparent
+    window.set_opacity(0)
+    window.set_default_size(0,0)
+    window.show_all()
+    gobject.timeout_add(100, lambda: gtk.main_quit())
+    gtk.main()
+
+fakewindow()
+END
+}
+
+# only make fake GTK window if not running from unity launcher (not from terminal)
+tty -s
+if [[ "$?" != "0" ]]; then
+	fake_window
+fi
