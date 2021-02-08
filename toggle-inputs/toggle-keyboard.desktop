@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=ToggleKeyboard
+Exec=/usr/local/bin/toggle-keyboard
+Icon=/usr/share/icons/HighContrast/256x256/devices/input-keyboard.png
+Type=Application
+Terminal=false
+StartupNotify=false

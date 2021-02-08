@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=ToggleTouchpad
+Exec=/usr/local/bin/toggle-touchpad
+Icon=/usr/share/icons/HighContrast/256x256/devices/input-touchpad.png
+Type=Application
+Terminal=false
+StartupNotify=false
