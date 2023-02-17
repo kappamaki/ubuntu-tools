@@ -1,13 +1,23 @@
 #!/usr/bin/env bash
 
-device="ELAN0B00:00 04F3:306A Touchpad"
-state=$(xinput list-props "$device" | grep "Device Enabled" | grep -o "[01]$")
+test_device="ELAN067A:00 04F3:3197 Touchpad"
+all_devices=(
+    "ELAN067A:00 04F3:3197 Touchpad" \
+    "TPPS/2 Elan TrackPoint" \
+)
+state=$(xinput list-props "$test_device" | grep "Device Enabled" | grep -o "[01]$")
 
 if [ $state == '1' ];then
-  xinput --disable "$device"
+  for device in "${all_devices[@]}"
+  do
+    xinput --disable "$device"
+  done
   notify-send "touchpad disabled" --expire-time=1
 else
-  xinput --enable "$device"
+  for device in "${all_devices[@]}"
+  do
+    xinput --enable "$device"
+  done
   notify-send "touchpad enabled" --expire-time=1
 fi
 
