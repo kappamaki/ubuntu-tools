@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -eu
+
+random_file_suffix=$(python3 -c "import random ; import string ; print(''.join(random.choices(string.ascii_lowercase, k=16)))")
+merged_branch_file=/tmp/merged_branches_${random_file_suffix}
+local_branch_file=/tmp/local_branches_${random_file_suffix}
+prune_branch_file=/tmp/prune_branches_${random_file_suffix}
+
+# List all branches merged by GitHub PRs
+gh pr list \
+  --state merged \
+  --limit 999999 \
+  --json "headRefName" \
+  --jq ".[] | .headRefName" \
+  | sort > $merged_branch_file
+
+# List all local branches
+git branch | sed "s/\s//g" | sort > $local_branch_file
+
+# Get common branch names
+comm -1 -2 $merged_branch_file $local_branch_file > $prune_branch_file
+
+num_branches=$(cat $prune_branch_file | wc -l)
+
+if [[ "$num_branches" == "0" ]]
+then
+	echo "No merged PR branches to prune!"
+else
+	echo "---------"
+	echo "TO DELETE"
+	echo "---------"
+	head -n 10 $prune_branch_file
+	if [[ ${num_branches} -gt 10 ]]
+	then
+		echo "..."
+	fi
+	read -p "Delete ${num_branches} branches for merged PRs? [y/n] " -n 1 -r
+	echo    # move to a new line
+	if [[ $REPLY =~ ^[Yy]$ ]]
+	then
+	    cat $prune_branch_file | xargs git branch -D
+	fi
+fi
+
+rm $local_branch_file
+rm $merged_branch_file
+rm $prune_branch_file
